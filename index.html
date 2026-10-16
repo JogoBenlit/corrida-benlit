@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#12263A">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Corrida Benlit">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="description" content="Corrida online com a galera da Benlit. Abra o link, escolha seu apelido e acelere.">
+  <meta property="og:title" content="Corrida Benlit 🏁">
+  <meta property="og:description" content="Entre na sala e dispute com a galera pelo navegador. Sem instalar nada.">
+  <meta property="og:type" content="website">
+  <title>Corrida Benlit</title>
+  <link rel="icon" type="image/png" href="assets/lion.png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=Russo+One&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- ============ INÍCIO ============ -->
+  <section id="screen-home" class="screen active" aria-label="Início">
+    <div class="home">
+      <div class="home-hero">
+        <img class="home-logo" src="assets/benlit-logo.png" alt="Benlit" width="900" height="283">
+        <h1 class="title"><span>Corrida</span><span>Benlit</span></h1>
+        <div class="flag-strip" aria-hidden="true"></div>
+        <p class="lead">Corrida online com a galera do trabalho. Abra o link, escolha o carro e acelere — sem instalar nada.</p>
+      </div>
+
+      <form class="home-panel" onsubmit="return false">
+        <label class="field">
+          <span>Seu apelido</span>
+          <input id="nick" type="text" maxlength="14" autocomplete="nickname" autocapitalize="words" spellcheck="false" placeholder="Ex.: Daniel" enterkeyhint="go">
+        </label>
+        <div class="field">
+          <span id="color-label">Cor do carro</span>
+          <div id="color-picker" class="swatches" role="group" aria-labelledby="color-label"></div>
+        </div>
+
+        <div id="invite-box" class="invite-box" hidden>
+          <p>Você foi convidado para a sala</p>
+          <button id="btn-join-invite" type="button" class="btn primary big">Entrar na sala <b id="invite-code"></b></button>
+        </div>
+
+        <button id="btn-create" type="button" class="btn primary big">Criar sala</button>
+
+        <div class="join-row">
+          <input id="code-input" type="text" inputmode="text" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Código da sala" aria-label="Código da sala">
+          <button id="btn-join" type="button" class="btn">Entrar</button>
+        </div>
+        <p id="home-error" class="error" role="alert"></p>
+      </form>
+
+      <div class="how">
+        <div><b>Computador</b> W/↑ acelera · S/↓ freia e dá ré · A D/← → vira · Espaço = drift · Shift = nitro</div>
+        <div><b>Celular</b> botões na tela, de preferência com o aparelho deitado</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LOBBY ============ -->
+  <section id="screen-lobby" class="screen" aria-label="Sala de espera">
+    <div class="lobby">
+      <header class="lobby-head">
+        <img src="assets/lion.png" alt="" class="lobby-lion" width="44" height="44">
+        <div class="room-id">
+          <span>Sala</span>
+          <strong id="lobby-code">----</strong>
+        </div>
+        <button id="btn-leave" type="button" class="btn ghost small">Sair da sala</button>
+      </header>
+
+      <div class="invite">
+        <div class="invite-actions">
+          <button id="btn-invite" type="button" class="btn primary">Convidar amigos</button>
+          <a id="btn-whatsapp" class="btn whatsapp" target="_blank" rel="noopener">Enviar no WhatsApp</a>
+          <button id="btn-copy" type="button" class="btn">Copiar link</button>
+        </div>
+        <div id="share-link" class="share-link"></div>
+      </div>
+
+      <div class="lobby-grid">
+        <section class="card">
+          <h2>Pilotos <small id="player-count"></small></h2>
+          <ul id="player-list" class="plist"></ul>
+        </section>
+        <section class="card">
+          <h2>Largada</h2>
+          <div class="field"><span>Número de voltas</span><div id="laps-picker" class="segmented"></div></div>
+          <div class="field"><span>Seu carro</span><div id="lobby-colors" class="swatches small"></div></div>
+          <button id="btn-start" type="button" class="btn primary big">Iniciar corrida</button>
+          <p id="lobby-status" class="status"></p>
+        </section>
+        <section class="card">
+          <h2>Campeonato da sala</h2>
+          <ol id="standings" class="plist standings"></ol>
+          <button id="btn-reset-standings" type="button" class="btn ghost small" hidden>Zerar pontos</button>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CORRIDA ============ -->
+  <section id="screen-game" class="screen" aria-label="Corrida">
+    <canvas id="game"></canvas>
+
+    <div id="touch-controls" class="touch-controls" hidden>
+      <div class="tc-left">
+        <button type="button" class="tc steer" data-btn="left" aria-label="Virar à esquerda"><svg viewBox="0 0 24 24"><path d="M15 4 7 12l8 8"/></svg></button>
+        <button type="button" class="tc steer" data-btn="right" aria-label="Virar à direita"><svg viewBox="0 0 24 24"><path d="m9 4 8 8-8 8"/></svg></button>
+      </div>
+      <div class="tc-right">
+        <button type="button" class="tc drift" data-btn="handbrake">Drift</button>
+        <button type="button" class="tc nitro" data-btn="nitro">Nitro</button>
+        <button type="button" class="tc brake" data-btn="down">Freio<small>e ré</small></button>
+        <button type="button" class="tc gas" data-btn="up">Acelerar</button>
+      </div>
+    </div>
+
+    <div id="hud" class="hud">
+      <div class="hud-tl">
+        <div id="hud-pos" class="hud-pos">1º<small>/1</small></div>
+        <div class="hud-lines">
+          <div>Volta <b id="hud-lap">1/3</b></div>
+          <div id="hud-time" class="hud-time">0:00.00</div>
+          <div id="hud-best" class="hud-best"></div>
+        </div>
+      </div>
+      <div class="hud-tr">
+        <div class="hud-buttons">
+          <button id="btn-sound" type="button" class="hb" aria-label="Som">🔊</button>
+          <button id="btn-music" type="button" class="hb" aria-label="Música">♫</button>
+          <button id="btn-fullscreen" type="button" class="hb" aria-label="Tela cheia">⛶</button>
+          <button id="btn-exit" type="button" class="hb" aria-label="Sair">✕</button>
+        </div>
+        <canvas id="minimap" class="minimap"></canvas>
+        <div id="hud-ping" class="ping"></div>
+      </div>
+      <div class="hud-speed">
+        <div class="speed-num"><span id="hud-speed">0</span><small>km/h</small></div>
+        <div class="nitro-bar"><i id="hud-nitro"></i></div>
+      </div>
+      <div id="hud-msg" class="hud-msg"></div>
+      <div id="spectate-banner" class="spectate" hidden>Corrida em andamento — você entra na próxima. Assistindo ao líder.</div>
+    </div>
+
+    <div id="countdown" class="countdown" aria-live="assertive"></div>
+
+    <div id="rotate-hint" class="rotate-hint" hidden>
+      <span class="phone-icon" aria-hidden="true"></span>
+      <span>Deite o celular para enxergar mais da pista.</span>
+      <button id="rotate-ok" type="button" class="btn small">Jogar assim</button>
+    </div>
+
+    <div id="results" class="results" hidden>
+      <div class="results-card">
+        <h2 id="results-title">Resultado</h2>
+        <div id="podium" class="podium"></div>
+        <div class="table-wrap"><table id="results-table" class="rtable"></table></div>
+        <div class="results-actions">
+          <button id="btn-again" type="button" class="btn primary big">Jogar novamente</button>
+          <button id="btn-to-lobby" type="button" class="btn">Ir para o lobby</button>
+        </div>
+        <p id="results-wait" class="status">Aguardando o anfitrião iniciar a próxima corrida…</p>
+      </div>
+    </div>
+  </section>
+
+  <div id="conn-banner" class="conn-banner" hidden></div>
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <script src="config.js"></script>
+  <script>
+    // Carrega o cliente Socket.IO do servidor configurado e depois os scripts do jogo
+    (function () {
+      var base = (window.CORRIDA_SERVER_URL || '').replace(/\/+$/, '');
+      var files = [base + '/socket.io/socket.io.min.js', 'shared/track.js', 'js/audio.js', 'js/input.js', 'js/game.js', 'js/main.js'];
+      function next(i) {
+        if (i >= files.length) return;
+        var s = document.createElement('script');
+        s.src = files[i];
+        s.onload = function () { next(i + 1); };
+        s.onerror = function () {
+          var b = document.getElementById('conn-banner');
+          b.hidden = false; b.className = 'conn-banner warn';
+          b.textContent = i === 0 ? 'Servidor do jogo indisponível. Se ele estava dormindo, aguarde ~1 minuto e recarregue.' : 'Erro ao carregar o jogo. Recarregue a página.';
+        };
+        document.body.appendChild(s);
+      }
+      next(0);
+    })();
+  </script>
+</body>
+</html>

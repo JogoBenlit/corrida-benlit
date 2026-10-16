@@ -1,0 +1,12 @@
+# Blueprint do Render (opcional): cria o serviço automaticamente a partir do GitHub
+services:
+  - type: web
+    name: corrida-benlit
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
